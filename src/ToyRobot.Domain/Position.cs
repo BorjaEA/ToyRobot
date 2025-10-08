@@ -25,5 +25,9 @@ namespace ToyRobot.Domain
 			Row = row;
 			Col = col;
 		}
+		public override string ToString()
+		{
+			return $"{Row},{Col}";
+		}
 	}
 }
