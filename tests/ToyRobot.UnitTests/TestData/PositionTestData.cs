@@ -8,13 +8,13 @@ namespace ToyRobot.UnitTests.TestData
 		public static IEnumerable<object[]> InvalidRows => new List<object[]>
 		{
 			new object[]{0,3},
-			new object[]{6,3}
+			new object[]{-5,3}
 		};
 
 		public static IEnumerable<object[]> InvalidCols => new List<object[]>
 		{
 			new object[]{3,0},
-			new object[]{3,6}
+			new object[]{3,-5}
 		};
 	}
 }
