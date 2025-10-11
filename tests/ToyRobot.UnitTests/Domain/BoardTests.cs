@@ -6,17 +6,42 @@ namespace ToyRobot.UnitTests.Domain
 {
 	public class BoardTests
 	{
+		private readonly int boardHeight;
+		private readonly int boardWidth;
+
+		private readonly int robotRow;
+		private readonly int robotCol;
+		private readonly int wallRow;
+		private readonly int wallCol;
+
+		private readonly Position initialRobotPosition;
+		private readonly Facing initialFacing;
+
+		public BoardTests()
+		{
+			// Board dimensions
+			boardHeight = 5;
+			boardWidth = 5;
+
+			// Robot position
+			robotRow = 1;
+			robotCol = 1;
+			initialRobotPosition = new Position(robotRow, robotCol);
+			initialFacing = Facing.North;
+
+			// Wall position
+			wallRow = 2;
+			wallCol = 2;
+		}
+
 		[Fact]
 		public void Constructor_DefaultInputs_ShouldCreateBoardCorrectly()
 		{
-			var defaultHeight = 5;
-			var defaultWidth = 5;
-
 			var board = new Board();
 
 			Assert.IsType<Board>(board);
-			Assert.Equal(defaultHeight, board.Height);
-			Assert.Equal(defaultWidth, board.Width);
+			Assert.Equal(boardHeight, board.Height);
+			Assert.Equal(boardWidth, board.Width);
 			Assert.Empty(board.Walls);
 			Assert.Null(board.Robot);
 		}
@@ -27,7 +52,6 @@ namespace ToyRobot.UnitTests.Domain
 		{
 			Assert.Throws<InvalidPositionException>(() => new Board(height, width));
 		}
-
 		[Fact]
 		public void Constructor_WithRobot_ShouldPlaceRobotCorrectly()
 		{
@@ -200,6 +224,126 @@ namespace ToyRobot.UnitTests.Domain
 			var board = new Board(height, width, robot: robot);
 
 			Assert.False(board.IsRobotAt(checkPosition));
+		}
+
+		[Fact]
+		public void PlaceRobot_ValidPosition_ShouldPlaceRobot()
+		{
+			var board = new Board(boardHeight, boardWidth);
+
+			board.PlaceRobot(initialRobotPosition, initialFacing);
+
+			Assert.NotNull(board.Robot);
+			Assert.Equal(initialRobotPosition.Row, board.Robot.Position.Row);
+			Assert.Equal(initialRobotPosition.Col, board.Robot.Position.Col);
+			Assert.Equal(initialFacing, board.Robot.Facing);
+		}
+
+		[Fact]
+		public void PlaceRobot_PositionOccupiedByWall_ShouldThrowRobotPlacementException()
+		{
+			var board = new Board(boardHeight, boardWidth);
+			var wallPosition = new Position(wallRow, wallCol);
+			board.PlaceWall(wallPosition);
+
+			Assert.Throws<RobotPlacementException>(() => board.PlaceRobot(wallPosition, initialFacing));
+		}
+
+		[Fact]
+		public void MoveRobot_ForwardWithoutWall_ShouldUpdatePosition()
+		{
+			var board = new Board(boardHeight, boardWidth);
+			board.PlaceRobot(initialRobotPosition, Facing.North);
+
+			var expectedRow = initialRobotPosition.Row + 1;
+			var expectedCol = initialRobotPosition.Col;
+
+			board.MoveRobot();
+
+			Assert.NotNull(board.Robot);
+			Assert.Equal(expectedRow, board.Robot.Position.Row);
+			Assert.Equal(expectedCol, board.Robot.Position.Col);
+		}
+
+		[Fact]
+		public void MoveRobot_ForwardIntoWall_ShouldNotMove()
+		{
+			var board = new Board(boardHeight, boardWidth);
+			var wallPosition = new Position(robotRow + 1, robotCol);
+			board.PlaceWall(wallPosition);
+			board.PlaceRobot(initialRobotPosition, Facing.North);
+
+			board.MoveRobot();
+
+			Assert.NotNull(board.Robot);
+			Assert.Equal(initialRobotPosition.Row, board.Robot.Position.Row);
+			Assert.Equal(initialRobotPosition.Col, board.Robot.Position.Col);
+		}
+
+		[Fact]
+		public void MoveRobot_WrapAroundEdge_ShouldWrapPosition()
+		{
+			var board = new Board(boardHeight, boardWidth);
+			var topRow = boardHeight;
+			var col = 3;
+			var topEdgePosition = new Position(topRow, col);
+			board.PlaceRobot(topEdgePosition, Facing.North);
+
+			board.MoveRobot();
+
+			var expectedRow = 1;
+			var expectedCol = col;
+
+			Assert.NotNull(board.Robot);
+			Assert.Equal(expectedRow, board.Robot.Position.Row);
+			Assert.Equal(expectedCol, board.Robot.Position.Col);
+		}
+
+		[Theory]
+		[MemberData(nameof(BoardTestData.TurnLeftData), MemberType = typeof(BoardTestData))]
+		public void TurnRobotLeft_ShouldTurnCorrectly(Facing initial, Facing expected)
+		{
+			var board = new Board(boardHeight, boardWidth);
+			board.PlaceRobot(initialRobotPosition, initial);
+
+			board.TurnRobotLeft();
+
+			Assert.NotNull(board.Robot);
+			Assert.Equal(expected, board.Robot.Facing);
+		}
+
+		[Theory]
+		[MemberData(nameof(BoardTestData.TurnRightData), MemberType = typeof(BoardTestData))]
+		public void TurnRobotRight_ShouldTurnCorrectly(Facing initial, Facing expected)
+		{
+			var board = new Board(boardHeight, boardWidth);
+			board.PlaceRobot(initialRobotPosition, initial);
+
+			board.TurnRobotRight();
+
+			Assert.NotNull(board.Robot);
+			Assert.Equal(expected, board.Robot.Facing);
+		}
+
+		[Fact]
+		public void Report_WithRobot_ShouldReturnCorrectFormat()
+		{
+			var board = new Board(boardHeight, boardWidth);
+			board.PlaceRobot(initialRobotPosition, Facing.East);
+
+			var report = board.Report();
+
+			Assert.Equal($"{initialRobotPosition},{Facing.East.ToString().ToUpper()}", report);
+		}
+
+		[Fact]
+		public void Report_WithoutRobot_ShouldReturnEmptyString()
+		{
+			var board = new Board(boardHeight, boardWidth);
+
+			var report = board.Report();
+
+			Assert.Equal(string.Empty, report);
 		}
 	}
 }

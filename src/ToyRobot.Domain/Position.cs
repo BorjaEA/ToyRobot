@@ -22,12 +22,11 @@ namespace ToyRobot.Domain
 		/// </summary>
 		/// <param name="row">The row coordinate (must be between 1 and 5).</param>
 		/// <param name="col">The column coordinate (must be between 1 and 5).</param>
-		/// <exception cref="ArgumentException">
+		/// <exception cref="InvalidPositionException">
 		/// Thrown when <paramref name="row"/> or <paramref name="col"/> is out of the allowed range.
 		/// </exception>
 		public Position(int row, int col)
 		{
-
 			if (row < 1)
 				throw InvalidPositionException.ForRow(row);
 
@@ -39,12 +38,26 @@ namespace ToyRobot.Domain
 		}
 
 		/// <summary>
+		/// Determines whether this position is equal to another position by comparing row and column values.
+		/// </summary>
+		/// <param name="obj">The object to compare with.</param>
+		/// <returns><c>true</c> if the positions have the same row and column; otherwise, <c>false</c>.</returns>
+		public override bool Equals(object? obj)
+		{
+			if (obj is not Position other) return false;
+			return Row == other.Row && Col == other.Col;
+		}
+
+		/// <summary>
+		/// Returns a hash code for this position based on row and column values.
+		/// </summary>
+		/// <returns>An integer hash code.</returns>
+		public override int GetHashCode() => HashCode.Combine(Row, Col);
+
+		/// <summary>
 		/// Returns a string representation of the position in the format "Row,Col".
 		/// </summary>
 		/// <returns>A string representing the current position.</returns>
-		public override string ToString()
-		{
-			return $"{Row},{Col}";
-		}
+		public override string ToString() => $"{Row},{Col}";
 	}
 }

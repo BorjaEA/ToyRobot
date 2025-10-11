@@ -28,5 +28,7 @@ namespace ToyRobot.Domain
 			Position = position ?? throw new ArgumentNullException(nameof(position));
 			Facing = facing;
 		}
+
+
 	}
 }

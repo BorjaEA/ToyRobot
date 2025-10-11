@@ -23,12 +23,26 @@ namespace ToyRobot.Domain
 		}
 
 		/// <summary>
+		/// Determines whether this wall is equal to another wall by comparing positions.
+		/// </summary>
+		/// <param name="obj">The object to compare with.</param>
+		/// <returns><c>true</c> if the walls are at the same position; otherwise, <c>false</c>.</returns>
+		public override bool Equals(object? obj)
+		{
+			if (obj is not Wall other) return false;
+			return Position.Equals(other.Position);
+		}
+
+		/// <summary>
+		/// Returns a hash code for this wall based on its position.
+		/// </summary>
+		/// <returns>An integer hash code.</returns>
+		public override int GetHashCode() => Position.GetHashCode();
+
+		/// <summary>
 		/// Returns a string representation of the wall's position.
 		/// </summary>
 		/// <returns>A string in the format "Wall position at Row,Col".</returns>
-		public override string ToString()
-		{
-			return $"Wall position at {Position}";
-		}
+		public override string ToString() => $"Wall position at {Position}";
 	}
 }

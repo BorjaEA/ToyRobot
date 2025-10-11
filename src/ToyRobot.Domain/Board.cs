@@ -60,7 +60,7 @@ namespace ToyRobot.Domain
 
 			Height = height;
 			Width = width;
-			Robot = IsValidPosition(robot.Position) ? robot : throw new NullReferenceException("Robot cannot be null or undefined");
+			Robot = IsValidPosition(robot.Position) ? robot : throw RobotPlacementException.BecauseInvalidPosition(robot.Position);
 		}
 
 		/// <summary>
@@ -83,7 +83,7 @@ namespace ToyRobot.Domain
 
 			if (robot != null)
 			{
-				Robot = IsValidPosition(robot.Position) ? robot : throw new NullReferenceException("Robot cannot be null or undefined");
+				Robot = IsValidPosition(robot.Position) ? robot : throw RobotPlacementException.BecauseInvalidPosition(robot.Position);
 			}
 
 		}
@@ -101,6 +101,134 @@ namespace ToyRobot.Domain
 			_walls.Add(new Wall(position));
 			return true;
 		}
+
+		/// <summary>
+		/// Places the robot on the board at the specified position and facing direction.
+		/// If a robot already exists, it will be moved to the new position and direction.
+		/// </summary>
+		/// <param name="position">The position where the robot should be placed.</param>
+		/// <param name="facing">The direction the robot should face.</param>
+		/// <exception cref="InvalidPositionException">Thrown when the position is outside the board boundaries.</exception>
+		/// <exception cref="InvalidOperationException">Thrown when the target position is occupied by a wall.</exception>
+		public void PlaceRobot(Position position, Facing facing)
+		{
+			if (!IsValidPosition(position))
+				throw InvalidPositionException.ForRowAndColumn(position.Row, position.Col);
+
+			if (IsWallAt(position))
+				throw RobotPlacementException.BecauseWallIsPresent(position);
+
+			Robot = new Robot(position, facing);
+		}
+
+		/// <summary>
+		/// Moves the robot one space forward in its current facing direction.
+		/// If the robot would move beyond the edge of the board, it wraps to the opposite side.
+		/// If a wall is in front of the robot, the move is ignored.
+		/// </summary>
+		public void MoveRobot()
+		{
+			if (Robot == null) return;
+
+			Position targetPosition = GetNextPosition(Robot.Position, Robot.Facing);
+
+			// Wrap around if outside boundaries
+			if (!IsValidPosition(targetPosition))
+			{
+				targetPosition = WrapPosition(Robot.Position, Robot.Facing);
+			}
+
+			// Ignore if there's a wall in front
+			if (IsWallAt(targetPosition)) return;
+
+			Robot = new Robot(targetPosition, Robot.Facing);
+		}
+
+		/// <summary>
+		/// Turns the robot 90 degrees to the left (counter-clockwise).
+		/// Does nothing if the robot has not been placed.
+		/// </summary>
+		public void TurnRobotLeft()
+		{
+			if (Robot == null) return;
+
+			Facing newFacing = Robot.Facing switch
+			{
+				Facing.North => Facing.West,
+				Facing.West => Facing.South,
+				Facing.South => Facing.East,
+				Facing.East => Facing.North,
+				_ => Robot.Facing
+			};
+
+			Robot = new Robot(Robot.Position, newFacing);
+		}
+
+		/// <summary>
+		/// Turns the robot 90 degrees to the right (clockwise).
+		/// Does nothing if the robot has not been placed.
+		/// </summary>
+		public void TurnRobotRight()
+		{
+			if (Robot == null) return;
+
+			Facing newFacing = Robot.Facing switch
+			{
+				Facing.North => Facing.East,
+				Facing.East => Facing.South,
+				Facing.South => Facing.West,
+				Facing.West => Facing.North,
+				_ => Robot.Facing
+			};
+
+			Robot = new Robot(Robot.Position, newFacing);
+		}
+
+		/// <summary>
+		/// Reports the robot's current position and facing direction in the format "Row,Col,FACING".
+		/// </summary>
+		/// <returns>A string representing the robot's current state, or an empty string if no robot is placed.</returns>
+		public string Report()
+		{
+			return Robot == null ? string.Empty : $"{Robot.Position},{Robot.Facing.ToString().ToUpper()}";
+		}
+
+		/// <summary>
+		/// Calculates the next position based on the current position and facing direction.
+		/// </summary>
+		/// <param name="current">The current position.</param>
+		/// <param name="facing">The direction the robot is facing.</param>
+		/// <returns>The next position without applying board wrapping.</returns>
+		private Position GetNextPosition(Position current, Facing facing)
+		{
+			return facing switch
+			{
+				Facing.North => new Position(current.Row + 1, current.Col),
+				Facing.South => new Position(current.Row - 1, current.Col),
+				Facing.East => new Position(current.Row, current.Col + 1),
+				Facing.West => new Position(current.Row, current.Col - 1),
+				_ => current
+			};
+		}
+
+		/// <summary>
+		/// Wraps the robot's position to the opposite side of the board if it moves beyond the boundary.
+		/// </summary>
+		/// <param name="current">The current position.</param>
+		/// <param name="facing">The direction of movement.</param>
+		/// <returns>The wrapped position.</returns>
+		private Position WrapPosition(Position current, Facing facing)
+		{
+			return facing switch
+			{
+				Facing.North => new Position(1, current.Col),
+				Facing.South => new Position(Height, current.Col),
+				Facing.East => new Position(current.Row, 1),
+				Facing.West => new Position(current.Row, Width),
+				_ => current
+			};
+		}
+
 
 		/// <summary>
 		/// Determines whether there is a wall at the specified position.
