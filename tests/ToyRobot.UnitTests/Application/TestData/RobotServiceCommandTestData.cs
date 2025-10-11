@@ -7,46 +7,42 @@ namespace ToyRobot.UnitTests.Application.TestData
 		public static IEnumerable<object[]> CommandSequences =>
 			new List<object[]>
 			{
-                // Simple move north
-                new object[]
+				new object[]
 				{
-					new string[] { "PLACE 1,1,NORTH", "MOVE" },
+					new string[] { "PLACE_ROBOT 1,1,NORTH", "MOVE" },
+					new Position(1, 5),
+					Facing.North
+				},
+				new object[]
+				{
+					new string[] { "PLACE_ROBOT 2,2,EAST", "LEFT", "MOVE" },
 					new Position(2, 1),
 					Facing.North
 				},
-                // Turn left then move
-                new object[]
+				new object[]
 				{
-					new string[] { "PLACE 2,2,EAST", "LEFT", "MOVE" },
-					new Position(3, 2),
-					Facing.North
-				},
-                // Turn right then move
-                new object[]
-				{
-					new string[] { "PLACE 3,3,SOUTH", "RIGHT", "MOVE" },
-					new Position(3, 2),
+					new string[] { "PLACE_ROBOT 3,3,SOUTH", "RIGHT", "MOVE" },
+					new Position(2, 3),
 					Facing.West
 				},
-                // Ignore MOVE into wall
-                new object[]
+				new object[]
 				{
-					new string[] { "PLACE 2,2,NORTH", "MOVE" }, // assume wall at 3,2
-                    new Position(2,2),
+					new string[] { "PLACE_ROBOT 2,2,NORTH", "MOVE" },
+					new Position(2, 2),
 					Facing.North,
-					new List<Position> { new Position(3,2) } // walls
-                },
-                // Multiple moves and turns
-                new object[]
+					new List<Position> { new Position(2, 1) }
+				},
+				new object[]
 				{
-					new string[] { "PLACE 1,1,NORTH", "MOVE", "RIGHT", "MOVE", "LEFT", "MOVE" },
-					new Position(3,2),
+					new string[] { "PLACE_ROBOT 1,1,NORTH", "MOVE", "RIGHT", "MOVE", "LEFT", "MOVE" },
+					new Position(2, 4),
 					Facing.North
 				}
 			};
+
 		public static IEnumerable<object[]> CommandSequencesFromPDF =>
-		new List<object[]>
-		{
+			new List<object[]>
+			{
 				new object[]
 				{
 					new string[]
@@ -61,11 +57,9 @@ namespace ToyRobot.UnitTests.Application.TestData
 						"MOVE",
 						"REPORT"
 					},
-					new Position(1, 4),   // Expected row
-                    Facing.East,           // Expected facing
-                    new List<Position> { new Position(3,5) } // Walls
-                },
-
+					new Position(1, 1),
+					Facing.East
+				},
 				new object[]
 				{
 					new string[]
@@ -79,15 +73,9 @@ namespace ToyRobot.UnitTests.Application.TestData
 						"MOVE",
 						"REPORT"
 					},
-					new Position(3, 2),   // Expected row
-                    Facing.East,           // Expected facing
-                    new List<Position>
-					{
-						new Position(1,1),
-						new Position(2,2),
-						new Position(1,3)
-					} // Walls
-                }
-		};
+					new Position(3, 2),
+					Facing.East
+				}
+			};
 	}
 }

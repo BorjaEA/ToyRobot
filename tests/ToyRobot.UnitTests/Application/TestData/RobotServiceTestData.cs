@@ -7,9 +7,9 @@ namespace ToyRobot.UnitTests.Application.TestData
 		public static IEnumerable<object[]> ValidPlacePositions =>
 			new List<object[]>
 			{
-				new object[] { 1, 1, Facing.North },
+				new object[] { 1, 5, Facing.North },
 				new object[] { 2, 3, Facing.South },
-				new object[] { 5, 5, Facing.East },
+				new object[] { 5, 1, Facing.East },
 				new object[] { 4, 2, Facing.West }
 			};
 

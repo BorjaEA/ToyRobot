@@ -123,8 +123,8 @@ namespace ToyRobot.Domain
 
 		/// <summary>
 		/// Moves the robot one space forward in its current facing direction.
-		/// If the robot would move beyond the edge of the board, it wraps to the opposite side.
-		/// If a wall is in front of the robot, the move is ignored.
+		/// If the robot reaches the edge of the board, it wraps to the opposite side.
+		/// The move is ignored if a wall is in front of the robot.
 		/// </summary>
 		public void MoveRobot()
 		{
@@ -132,13 +132,6 @@ namespace ToyRobot.Domain
 
 			Position targetPosition = GetNextPosition(Robot.Position, Robot.Facing);
 
-			// Wrap around if outside boundaries
-			if (!IsValidPosition(targetPosition))
-			{
-				targetPosition = WrapPosition(Robot.Position, Robot.Facing);
-			}
-
-			// Ignore if there's a wall in front
 			if (IsWallAt(targetPosition)) return;
 
 			Robot = new Robot(targetPosition, Robot.Facing);
@@ -194,22 +187,40 @@ namespace ToyRobot.Domain
 		}
 
 		/// <summary>
-		/// Calculates the next position based on the current position and facing direction.
+		/// Calculates the next position of the robot based on its current position and facing direction.
+		/// Applies board wrapping so that moving beyond an edge places the robot on the opposite side.
 		/// </summary>
-		/// <param name="current">The current position.</param>
+		/// <param name="current">The current position of the robot.</param>
 		/// <param name="facing">The direction the robot is facing.</param>
-		/// <returns>The next position without applying board wrapping.</returns>
+		/// <returns>The next valid position after moving one step forward.</returns>
 		private Position GetNextPosition(Position current, Facing facing)
 		{
-			return facing switch
+			int nextRow = current.Row;
+			int nextCol = current.Col;
+
+			switch (facing)
 			{
-				Facing.North => new Position(current.Row + 1, current.Col),
-				Facing.South => new Position(current.Row - 1, current.Col),
-				Facing.East => new Position(current.Row, current.Col + 1),
-				Facing.West => new Position(current.Row, current.Col - 1),
-				_ => current
-			};
+				case Facing.North:
+					nextRow = current.Row - 1;
+					if (nextRow < 1) nextRow = Height; // wrap to bottom
+					break;
+				case Facing.South:
+					nextRow = current.Row + 1;
+					if (nextRow > Height) nextRow = 1; // wrap to top
+					break;
+				case Facing.East:
+					nextCol = current.Col + 1;
+					if (nextCol > Width) nextCol = 1; // wrap to left
+					break;
+				case Facing.West:
+					nextCol = current.Col - 1;
+					if (nextCol < 1) nextCol = Width; // wrap to right
+					break;
+			}
+
+			return new Position(nextCol, nextRow);
 		}
+
 
 		/// <summary>
 		/// Wraps the robot's position to the opposite side of the board if it moves beyond the boundary.
@@ -221,14 +232,13 @@ namespace ToyRobot.Domain
 		{
 			return facing switch
 			{
-				Facing.North => new Position(1, current.Col),
-				Facing.South => new Position(Height, current.Col),
+				Facing.North => new Position(Height, current.Col),
+				Facing.South => new Position(1, current.Col),
 				Facing.East => new Position(current.Row, 1),
 				Facing.West => new Position(current.Row, Width),
 				_ => current
 			};
 		}
-
 
 		/// <summary>
 		/// Determines whether there is a wall at the specified position.

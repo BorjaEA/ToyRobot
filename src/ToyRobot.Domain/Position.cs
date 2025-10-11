@@ -25,7 +25,7 @@ namespace ToyRobot.Domain
 		/// <exception cref="InvalidPositionException">
 		/// Thrown when <paramref name="row"/> or <paramref name="col"/> is out of the allowed range.
 		/// </exception>
-		public Position(int row, int col)
+		public Position(int col, int row)
 		{
 			if (row < 1)
 				throw InvalidPositionException.ForRow(row);
@@ -58,6 +58,6 @@ namespace ToyRobot.Domain
 		/// Returns a string representation of the position in the format "Row,Col".
 		/// </summary>
 		/// <returns>A string representing the current position.</returns>
-		public override string ToString() => $"{Row},{Col}";
+		public override string ToString() => $"{Col},{Row}";
 	}
 }

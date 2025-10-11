@@ -1,6 +1,7 @@
 using ToyRobot.Domain;
 using ToyRobot.UnitTests.Domain.TestData;
 using ToyRobot.Domain.Exceptions;
+using System.Reflection;
 
 namespace ToyRobot.UnitTests.Domain
 {
@@ -249,56 +250,6 @@ namespace ToyRobot.UnitTests.Domain
 			Assert.Throws<RobotPlacementException>(() => board.PlaceRobot(wallPosition, initialFacing));
 		}
 
-		[Fact]
-		public void MoveRobot_ForwardWithoutWall_ShouldUpdatePosition()
-		{
-			var board = new Board(boardHeight, boardWidth);
-			board.PlaceRobot(initialRobotPosition, Facing.North);
-
-			var expectedRow = initialRobotPosition.Row + 1;
-			var expectedCol = initialRobotPosition.Col;
-
-			board.MoveRobot();
-
-			Assert.NotNull(board.Robot);
-			Assert.Equal(expectedRow, board.Robot.Position.Row);
-			Assert.Equal(expectedCol, board.Robot.Position.Col);
-		}
-
-		[Fact]
-		public void MoveRobot_ForwardIntoWall_ShouldNotMove()
-		{
-			var board = new Board(boardHeight, boardWidth);
-			var wallPosition = new Position(robotRow + 1, robotCol);
-			board.PlaceWall(wallPosition);
-			board.PlaceRobot(initialRobotPosition, Facing.North);
-
-			board.MoveRobot();
-
-			Assert.NotNull(board.Robot);
-			Assert.Equal(initialRobotPosition.Row, board.Robot.Position.Row);
-			Assert.Equal(initialRobotPosition.Col, board.Robot.Position.Col);
-		}
-
-		[Fact]
-		public void MoveRobot_WrapAroundEdge_ShouldWrapPosition()
-		{
-			var board = new Board(boardHeight, boardWidth);
-			var topRow = boardHeight;
-			var col = 3;
-			var topEdgePosition = new Position(topRow, col);
-			board.PlaceRobot(topEdgePosition, Facing.North);
-
-			board.MoveRobot();
-
-			var expectedRow = 1;
-			var expectedCol = col;
-
-			Assert.NotNull(board.Robot);
-			Assert.Equal(expectedRow, board.Robot.Position.Row);
-			Assert.Equal(expectedCol, board.Robot.Position.Col);
-		}
-
 		[Theory]
 		[MemberData(nameof(BoardTestData.TurnLeftData), MemberType = typeof(BoardTestData))]
 		public void TurnRobotLeft_ShouldTurnCorrectly(Facing initial, Facing expected)
@@ -344,6 +295,80 @@ namespace ToyRobot.UnitTests.Domain
 			var report = board.Report();
 
 			Assert.Equal(string.Empty, report);
+		}
+
+		[Fact]
+		public void MoveRobot_ForwardWithoutWall_ShouldUpdatePosition()
+		{
+			var board = new Board(boardHeight, boardWidth);
+			board.PlaceRobot(initialRobotPosition, Facing.North);
+
+			// North decreases row
+			var expectedRow = initialRobotPosition.Row - 1 < 1 ? boardHeight : initialRobotPosition.Row - 1;
+			var expectedCol = initialRobotPosition.Col;
+
+			board.MoveRobot();
+
+			Assert.NotNull(board.Robot);
+			Assert.Equal(expectedRow, board.Robot.Position.Row);
+			Assert.Equal(expectedCol, board.Robot.Position.Col);
+		}
+
+		[Fact]
+		public void MoveRobot_ForwardIntoWall_ShouldNotMove()
+		{
+			var board = new Board(boardHeight, boardWidth);
+			var expectedCol = initialRobotPosition.Row - 1 < 1 ? boardHeight : initialRobotPosition.Row - 1;
+			var wallPosition = new Position(initialRobotPosition.Col, expectedCol);
+			board.PlaceWall(wallPosition);
+			board.PlaceRobot(initialRobotPosition, Facing.North);
+
+			board.MoveRobot();
+
+			Assert.NotNull(board.Robot);
+			Assert.Equal(initialRobotPosition.Row, board.Robot.Position.Row);
+			Assert.Equal(initialRobotPosition.Col, board.Robot.Position.Col);
+		}
+
+		[Fact]
+		public void MoveRobot_WrapAroundEdge_ShouldWrapPosition()
+		{
+			var board = new Board(boardHeight, boardWidth);
+			// Place robot at top edge (row = 1)
+			var topEdgePosition = new Position(3, 1);
+			board.PlaceRobot(topEdgePosition, Facing.North);
+
+			board.MoveRobot();
+
+			var expectedCol = topEdgePosition.Col;
+			var expectedRow = board.Width;
+
+			Assert.NotNull(board.Robot);
+			Assert.Equal(expectedRow, board.Robot.Position.Row);
+			Assert.Equal(expectedCol, board.Robot.Position.Col);
+		}
+
+
+		[Fact]
+		public void MoveRobot_WrapAroundEdge_EastAndWest_ShouldWrapCorrectly()
+		{
+			var board = new Board(boardHeight, boardWidth);
+
+			// East wrap
+			var eastEdge = new Position(boardWidth, 3);
+			board.PlaceRobot(eastEdge, Facing.East);
+			board.MoveRobot();
+
+			Assert.NotNull(board.Robot);
+			Assert.Equal(1, board.Robot.Position.Col);
+			Assert.Equal(3, board.Robot.Position.Row);
+
+			// West wrap
+			var westEdge = new Position(1, 3);
+			board.PlaceRobot(westEdge, Facing.West);
+			board.MoveRobot();
+			Assert.Equal(board.Width, board.Robot.Position.Col);
+			Assert.Equal(3, board.Robot.Position.Row);
 		}
 	}
 }

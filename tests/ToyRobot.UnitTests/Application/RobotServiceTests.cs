@@ -19,19 +19,20 @@ namespace ToyRobot.UnitTests.Application
 
 		[Theory]
 		[MemberData(nameof(RobotServiceTestData.ValidPlacePositions), MemberType = typeof(RobotServiceTestData))]
-		public void PlaceRobot_ValidPosition_ShouldPlaceRobotCorrectly(int row, int col, Facing facing)
+		public void PlaceRobot_ValidPosition_ShouldPlaceRobotCorrectly(int col, int row, Facing facing)
 		{
-			var targetRow = row;
 			var targetCol = col;
+			var targetRow = row;
 			var targetFacing = facing;
 
-			_service.PlaceRobot(targetRow, targetCol, targetFacing);
+			_service.PlaceRobot(targetCol, targetRow, targetFacing);
 
 			Assert.NotNull(_board.Robot);
-			Assert.Equal(targetRow, _board.Robot.Position.Row);
 			Assert.Equal(targetCol, _board.Robot.Position.Col);
+			Assert.Equal(targetRow, _board.Robot.Position.Row);
 			Assert.Equal(targetFacing, _board.Robot.Facing);
 		}
+
 
 		[Theory]
 		[MemberData(nameof(RobotServiceTestData.InvalidPositions), MemberType = typeof(RobotServiceTestData))]
@@ -84,10 +85,10 @@ namespace ToyRobot.UnitTests.Application
 			var initialCol = 2;
 			var facing = Facing.North;
 
-			_service.PlaceRobot(initialRow, initialCol, facing);
+			_service.PlaceRobot(initialCol, initialRow, facing);
 			_service.MoveRobot();
 
-			var expectedRow = initialRow + 1;
+			var expectedRow = initialRow - 1;
 			var expectedCol = initialCol;
 
 			Assert.NotNull(_board.Robot);
@@ -100,14 +101,14 @@ namespace ToyRobot.UnitTests.Application
 		{
 			var robotRow = 2;
 			var robotCol = 2;
-			var wallRow = robotRow + 1;
+			var wallRow = robotRow - 1;
 			var wallCol = robotCol;
 			var facing = Facing.North;
 
-			var wallPosition = new Position(wallRow, wallCol);
+			var wallPosition = new Position(wallCol, wallRow);
 			_board.PlaceWall(wallPosition);
 
-			_service.PlaceRobot(robotRow, robotCol, facing);
+			_service.PlaceRobot(robotCol, robotRow, facing);
 			_service.MoveRobot();
 
 			Assert.NotNull(_board.Robot);
@@ -122,9 +123,9 @@ namespace ToyRobot.UnitTests.Application
 			var col = 3;
 			var facing = Facing.East;
 
-			_service.PlaceRobot(row, col, facing);
+			_service.PlaceRobot(col, row, facing);
 
-			var expectedReport = $"{row},{col},{facing.ToString().ToUpper()}";
+			var expectedReport = $"{col},{row},{facing.ToString().ToUpper()}";
 			var actualReport = _service.Report();
 
 			Assert.Equal(expectedReport, actualReport);
@@ -146,9 +147,9 @@ namespace ToyRobot.UnitTests.Application
 				}
 			}
 
-			foreach (var cmd in commands)
+			foreach (var command in commands)
 			{
-				_service.ExecuteCommand(cmd);
+				_service.ExecuteCommand(command);
 			}
 
 			Assert.NotNull(_board.Robot);
@@ -179,7 +180,7 @@ namespace ToyRobot.UnitTests.Application
 			Assert.Equal(expectedPosition.Row, _board.Robot.Position.Row);
 			Assert.Equal(expectedPosition.Col, _board.Robot.Position.Col);
 			Assert.Equal(expectedFacing, _board.Robot.Facing);
-			Assert.Equal($"{expectedPosition.Row},{expectedPosition.Col},{expectedFacing.ToString().ToUpper()}", _service.Report());
+			Assert.Equal($"{expectedPosition.Col},{expectedPosition.Row},{expectedFacing.ToString().ToUpper()}", _service.Report());
 		}
 	}
 }

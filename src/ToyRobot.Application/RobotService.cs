@@ -33,41 +33,53 @@ namespace ToyRobot.Application
 		{
 			if (string.IsNullOrWhiteSpace(input)) return string.Empty;
 
-			var parts = input.Trim().Split(' ');
-			var command = parts[0].ToUpper();
-
-			switch (command)
+			try
 			{
-				case "PLACE_ROBOT":
-					if (parts.Length < 2) throw new ArgumentException("Invalid PLACE_ROBOT command");
-					var args = parts[1].Split(',');
-					int row = int.Parse(args[0]);
-					int col = int.Parse(args[1]);
-					Facing facing = Enum.Parse<Facing>(args[2], true);
-					PlaceRobot(row, col, facing);
-					break;
-				case "PLACE_WALL":
-					if (parts.Length < 2) throw new ArgumentException("Invalid PLACE_WALL command");
-					var wallArgs = parts[1].Split(',');
-					int wallRow = int.Parse(wallArgs[0]);
-					int wallCol = int.Parse(wallArgs[1]);
-					_board.PlaceWall(new Position(wallRow, wallCol));
-					break;
-				case "MOVE":
-					MoveRobot();
-					break;
-				case "LEFT":
-					TurnRobotLeft();
-					break;
-				case "RIGHT":
-					TurnRobotRight();
-					break;
-				case "REPORT":
-					return Report();
-				default:
-					throw new ArgumentException($"Unknown command '{command}'");
-			}
+				var parts = input.Trim().Split(' ');
+				var command = parts[0].ToUpper();
 
+				switch (command)
+				{
+					case "PLACE_ROBOT":
+						var args = parts[1].Split(',');
+						int row = int.Parse(args[0]);
+						int col = int.Parse(args[1]);
+						Facing facing = Enum.Parse<Facing>(args[2], true);
+						PlaceRobot(row, col, facing);
+						break;
+
+					case "PLACE_WALL":
+						var wallArgs = parts[1].Split(',');
+						int wallRow = int.Parse(wallArgs[0]);
+						int wallCol = int.Parse(wallArgs[1]);
+						_board.PlaceWall(new Position(wallRow, wallCol));
+						break;
+
+					case "MOVE":
+						MoveRobot();
+						break;
+
+					case "LEFT":
+						TurnRobotLeft();
+						break;
+
+					case "RIGHT":
+						TurnRobotRight();
+						break;
+
+					case "REPORT":
+						Report();
+						break;
+
+					default:
+						// Ignore unknown commands
+						break;
+				}
+			}
+			catch (Exception)
+			{
+				// Ignore invalid command or invalid position and continue
+			}
 			return string.Empty;
 		}
 
