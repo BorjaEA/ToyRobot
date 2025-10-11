@@ -1,3 +1,5 @@
+using System.Data;
+using ToyRobot.Domain.Exceptions;
 namespace ToyRobot.Domain
 {
 	/// <summary>
@@ -37,7 +39,7 @@ namespace ToyRobot.Domain
 		public Board(int height = 5, int width = 5)
 		{
 			if (height < 1 || width < 1)
-				throw new ArgumentOutOfRangeException("The height and the width must be greater that 0");
+				throw InvalidPositionException.ForRowAndColumn(height, width);
 
 			Height = height;
 			Width = width;
@@ -49,16 +51,16 @@ namespace ToyRobot.Domain
 		/// <param name="robot">The robot to place on the board.</param>
 		/// <param name="height">The number of rows on the board. Must be greater than 0.</param>
 		/// <param name="width">The number of columns on the board. Must be greater than 0.</param>
-		/// <exception cref="ArgumentOutOfRangeException">Thrown when height or width is less than 1.</exception>
+		/// <exception cref="InvalidPositionException">Thrown when height or width is less than 1.</exception>
 		/// <exception cref="NullReferenceException">Thrown when the robot is null or its position is invalid.</exception>
 		public Board(Robot robot, int height = 5, int width = 5)
 		{
 			if (height < 1 || width < 1)
-				throw new ArgumentOutOfRangeException("The height and the width must be greater that 0");
+				throw InvalidPositionException.ForRowAndColumn(height, width);
 
-			Robot = IsValidPosition(robot.Position) ? robot : throw new NullReferenceException("Robot cannot be null or undefined");
 			Height = height;
 			Width = width;
+			Robot = IsValidPosition(robot.Position) ? robot : throw new NullReferenceException("Robot cannot be null or undefined");
 		}
 
 		/// <summary>
@@ -70,19 +72,20 @@ namespace ToyRobot.Domain
 		/// <param name="width">The number of columns on the board. Must be greater than 0.</param>
 		/// <exception cref="ArgumentOutOfRangeException">Thrown when height or width is less than 1.</exception>
 		/// <exception cref="NullReferenceException">Thrown when the robot is provided but has an invalid position.</exception>
-		public Board(List<Wall>? walls = null, Robot? robot = null, int height = 5, int width = 5)
+		public Board(int height, int width, List<Wall>? walls = null, Robot? robot = null)
 		{
 			if (height < 1 || width < 1)
-				throw new ArgumentOutOfRangeException("The height and the width must be greater that 0");
+				throw InvalidPositionException.ForRowAndColumn(height, width);
 
+			Height = height;
+			Width = width;
 			_walls = walls ?? new List<Wall>();
+
 			if (robot != null)
 			{
 				Robot = IsValidPosition(robot.Position) ? robot : throw new NullReferenceException("Robot cannot be null or undefined");
 			}
 
-			Height = height;
-			Width = width;
 		}
 
 		/// <summary>

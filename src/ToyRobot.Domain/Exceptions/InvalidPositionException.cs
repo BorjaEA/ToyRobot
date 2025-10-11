@@ -11,5 +11,8 @@ namespace ToyRobot.Domain.Exceptions
 
 		public static InvalidPositionException ForColumn(int col) =>
 			new InvalidPositionException($"Column '{col}' is out of bounds.", nameof(col));
+
+		public static InvalidPositionException ForRowAndColumn(int row, int col) =>
+			new InvalidPositionException($"Row '{row}' or Column '{col}' are out of bounds.", $"{nameof(row)}, {nameof(col)}");
 	}
 }
