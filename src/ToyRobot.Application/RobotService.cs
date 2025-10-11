@@ -42,17 +42,17 @@ namespace ToyRobot.Application
 				{
 					case "PLACE_ROBOT":
 						var args = parts[1].Split(',');
-						int row = int.Parse(args[0]);
-						int col = int.Parse(args[1]);
+						int col = int.Parse(args[0]);
+						int row = int.Parse(args[1]);
 						Facing facing = Enum.Parse<Facing>(args[2], true);
-						PlaceRobot(row, col, facing);
+						PlaceRobot(col, row, facing);
 						break;
 
 					case "PLACE_WALL":
 						var wallArgs = parts[1].Split(',');
-						int wallRow = int.Parse(wallArgs[0]);
-						int wallCol = int.Parse(wallArgs[1]);
-						_board.PlaceWall(new Position(wallRow, wallCol));
+						int wallCol = int.Parse(wallArgs[0]);
+						int wallRow = int.Parse(wallArgs[1]);
+						_board.PlaceWall(new Position(wallCol, wallRow));
 						break;
 
 					case "MOVE":
@@ -68,8 +68,7 @@ namespace ToyRobot.Application
 						break;
 
 					case "REPORT":
-						Report();
-						break;
+						return Report();
 
 					default:
 						// Ignore unknown commands
